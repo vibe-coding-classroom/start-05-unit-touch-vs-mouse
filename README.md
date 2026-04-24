@@ -1,5 +1,3 @@
-Viewed start-05-unit-touch-vs-mouse.html:1-521
-
 針對 **`start-05-unit-touch-vs-mouse` (觸控 vs. 滑鼠：打造全平台通用的操控體驗)** 單元，這是學員建立「跨裝置相容性 (Cross-Device Compatibility)」認知的實戰課。它要求學員具備 **事件序列管理 (Event Sequencing)** 與 **輸入正規化 (Input Normalization)** 的能力，學習如何處理觸控特有的 300ms 延遲、攔截「幽靈點擊 (Ghost Clicks)」，並實作一個能同時應對滑鼠與指尖的萬用操控介面。
 
 以下是在 **GitHub Classroom** 部署其作業 (Assignments) 的具體建議：
