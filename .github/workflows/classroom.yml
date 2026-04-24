@@ -54,7 +54,7 @@ jobs:
         with:
           test-name: Ghost Click Prevention Check
           setup-command: ""
-          command: grep -A 10 "touchstart" touch-logic.js | grep "preventDefault"
+          command: 'grep -A 10 "touchstart" touch-logic.js | grep "preventDefault"'
           timeout: 1
           max-score: 25
 
@@ -70,7 +70,7 @@ jobs:
         with:
           test-name: Interaction Locking Check
           setup-command: ""
-          command: grep -A 5 "touchmove" touch-logic.js | grep "passive: false"
+          command: 'grep -A 5 "touchmove" touch-logic.js | grep "passive: false"'
           timeout: 1
           max-score: 25
 
