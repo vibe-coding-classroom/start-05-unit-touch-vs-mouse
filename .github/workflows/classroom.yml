@@ -54,10 +54,6 @@ jobs:
           max-score: 25
 
       - name: Autograding Reporter
-        uses: classroom-resources/autograding-grading-reporter@v1
+        uses: education/autograding-grading-reporter@v1
         with:
-          runners:
-            - file-check
-            - position-check
-            - prevention-check
-            - locking-check
+          runners: file-check,position-check,prevention-check,locking-check
