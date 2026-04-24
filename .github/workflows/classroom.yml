@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  file-check:
+  autograding:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -26,27 +26,15 @@ jobs:
           timeout: 1
           max-score: 20
 
-  position-check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Universal Position Logic Check
         id: position-check
         uses: classroom-resources/autograding-command-grader@v1
         with:
           test-name: Universal Position Logic Check
           setup-command: ""
-          command: grep -E "touches\\[0\\]" touch-logic.js
+          command: 'grep -E "touches\\[0\\]" touch-logic.js'
           timeout: 1
           max-score: 30
-
-  prevention-check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Ghost Click Prevention Check
         id: prevention-check
@@ -58,12 +46,6 @@ jobs:
           timeout: 1
           max-score: 25
 
-  locking-check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Interaction Locking Check
         id: locking-check
         uses: classroom-resources/autograding-command-grader@v1
@@ -74,16 +56,12 @@ jobs:
           timeout: 1
           max-score: 25
 
-  autograding-reporter:
-    runs-on: ubuntu-latest
-    needs:
-      - file-check
-      - position-check
-      - prevention-check
-      - locking-check
-    if: always()
-    steps:
       - name: Autograding Reporter
         uses: education/autograding-grading-reporter@v1
+        env:
+          FILE-CHECK_RESULTS: "${{ steps.file-check.outputs.result }}"
+          POSITION-CHECK_RESULTS: "${{ steps.position-check.outputs.result }}"
+          PREVENTION-CHECK_RESULTS: "${{ steps.prevention-check.outputs.result }}"
+          LOCKING-CHECK_RESULTS: "${{ steps.locking-check.outputs.result }}"
         with:
           runners: file-check,position-check,prevention-check,locking-check
