@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Touch vs. Mouse | 全平台操控實驗室</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0b10;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-primary: #6366f1;
+            --accent-secondary: #a855f7;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --font-main: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.05) 0%, transparent 40%);
+        }
+
+        header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            letter-spacing: 0.05rem;
+        }
+
+        main {
+            flex: 1;
+            padding: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-title i {
+            color: var(--accent-primary);
+        }
+
+        /* Lab Controls */
+        .lab-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+
+        .omni-button {
+            position: relative;
+            padding: 1.25rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+            user-select: none;
+            touch-action: none; /* Important for touch lab */
+        }
+
+        .omni-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .slider-container {
+            width: 100%;
+            max-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .custom-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            outline: none;
+            touch-action: pan-y; /* Test scroll locking */
+        }
+
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid var(--bg-color);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+            transition: transform 0.2s;
+        }
+
+        .custom-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        /* Event Log */
+        .log-container {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 1rem;
+            padding: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            overflow-y: auto;
+            max-height: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column-reverse; /* Newest logs at top */
+        }
+
+        .log-entry {
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: space-between;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .log-time { color: var(--text-dim); margin-right: 1rem; }
+        .log-type { font-weight: 500; }
+        .log-pos { color: var(--accent-secondary); }
+
+        .type-touchstart { color: #f472b6; }
+        .type-touchend { color: #db2777; }
+        .type-mousedown { color: #60a5fa; }
+        .type-mouseup { color: #2563eb; }
+        .type-click { color: #34d399; font-weight: 700; }
+
+        .clear-btn {
+            align-self: flex-end;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-dim);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .clear-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        footer {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="status-badge">Unit 05: Interaction Normalization</div>
+        <h1>Touch vs. Mouse</h1>
+        <p class="subtitle">打造全平台通用的操控體驗</p>
+    </header>
+
+    <main>
+        <!-- Interaction Area -->
+        <section class="card" id="control-lab">
+            <div class="card-title">
+                <span>🎮</span> Control Lab
+            </div>
+            <div class="lab-section">
+                <button id="omni-button" class="omni-button">
+                    萬用按鈕 (Omni-Button)
+                </button>
+                
+                <div class="slider-container">
+                    <label for="precision-slider" style="font-size: 0.9rem; color: var(--text-dim);">Precision Slider</label>
+                    <input type="range" id="precision-slider" class="custom-slider" min="0" max="100" value="50">
+                </div>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-dim); text-align: center;">
+                練習：攔截幽靈點擊與防止滾動衝突
+            </p>
+        </section>
+
+        <!-- Event Monitor -->
+        <section class="card" id="event-monitor">
+            <div class="card-title" style="justify-content: space-between;">
+                <span>📡 Live Event Stream</span>
+                <button class="clear-btn" id="clear-log">Clear Log</button>
+            </div>
+            <div class="log-container" id="event-log">
+                <!-- Logs will appear here -->
+                <div class="log-entry" style="border: none; color: var(--text-dim); justify-content: center;">
+                    Waiting for interactions...
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Vibe Coding Classroom. All platforms supported.</p>
+    </footer>
+
+    <script src="touch-logic.js"></script>
+    <script>
+        // UI Helpers for Event Logging
+        const logContainer = document.getElementById('event-log');
+        const clearBtn = document.getElementById('clear-log');
+        const omniBtn = document.getElementById('omni-button');
+        const slider = document.getElementById('precision-slider');
+
+        function addLog(type, details = '') {
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}`;
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            const typeClass = `type-${type.toLowerCase()}`;
+            
+            entry.innerHTML = `
+                <div>
+                    <span class="log-time">${timeStr}</span>
+                    <span class="log-type ${typeClass}">${type}</span>
+                </div>
+                <span class="log-pos">${details}</span>
+            `;
+            
+            // Remove the initial message if it exists
+            if (logContainer.children.length === 1 && logContainer.firstChild.innerText.includes('Waiting')) {
+                logContainer.innerHTML = '';
+            }
+
+            logContainer.prepend(entry);
+            
+            // Limit log entries
+            if (logContainer.children.length > 50) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+
+        clearBtn.onclick = () => {
+            logContainer.innerHTML = '<div class="log-entry" style="border: none; color: var(--text-dim); justify-content: center;">Waiting for interactions...</div>';
+        };
+
+        // Attach listeners for monitoring (these are separate from the student's logic)
+        const eventsToMonitor = ['touchstart', 'touchend', 'mousedown', 'mouseup', 'click'];
+        
+        eventsToMonitor.forEach(evtType => {
+            omniBtn.addEventListener(evtType, (e) => {
+                let pos = '';
+                if (typeof getPosition === 'function') {
+                    const { x, y } = getPosition(e);
+                    pos = `(${Math.round(x)}, ${Math.round(y)})`;
+                }
+                addLog(evtType, pos);
+            }, { passive: true }); // Using passive: true for monitor only
+        });
+
+        slider.addEventListener('touchmove', (e) => {
+            addLog('touchmove', 'sliding...');
+        }, { passive: true });
+
+        slider.addEventListener('mousemove', (e) => {
+            if (e.buttons > 0) addLog('mousemove', 'dragging...');
+        });
+    </script>
+</body>
+</html>
