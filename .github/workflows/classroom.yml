@@ -1,13 +1,16 @@
 name: Autograding Tests
-'on':
-  - push
-  - workflow_dispatch
+
+on:
+  push:
+  workflow_dispatch:
+
 permissions:
   checks: write
   actions: read
   contents: read
+
 jobs:
-  run-tests:
+  file-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -18,41 +21,68 @@ jobs:
         uses: classroom-resources/autograding-command-grader@v1
         with:
           test-name: File Existence Check
-          setup-command: ''
+          setup-command: ""
           command: ls index.html touch-logic.js
           timeout: 1
           max-score: 20
+
+  position-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Universal Position Logic Check
         id: position-check
         uses: classroom-resources/autograding-command-grader@v1
         with:
           test-name: Universal Position Logic Check
-          setup-command: ''
-          command: grep -E "touches\[0\]" touch-logic.js
+          setup-command: ""
+          command: grep -E "touches\\[0\\]" touch-logic.js
           timeout: 1
           max-score: 30
+
+  prevention-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Ghost Click Prevention Check
         id: prevention-check
         uses: classroom-resources/autograding-command-grader@v1
         with:
           test-name: Ghost Click Prevention Check
-          setup-command: ''
+          setup-command: ""
           command: grep -A 10 "touchstart" touch-logic.js | grep "preventDefault"
           timeout: 1
           max-score: 25
+
+  locking-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Interaction Locking Check
         id: locking-check
         uses: classroom-resources/autograding-command-grader@v1
         with:
           test-name: Interaction Locking Check
-          setup-command: ''
-          command: 'grep -A 5 "touchmove" touch-logic.js | grep "passive: false"'
+          setup-command: ""
+          command: grep -A 5 "touchmove" touch-logic.js | grep "passive: false"
           timeout: 1
           max-score: 25
 
+  autograding-reporter:
+    runs-on: ubuntu-latest
+    needs:
+      - file-check
+      - position-check
+      - prevention-check
+      - locking-check
+    if: always()
+    steps:
       - name: Autograding Reporter
         uses: education/autograding-grading-reporter@v1
         with:
